@@ -17,8 +17,31 @@ Base = automap_base()
 Base.prepare(db_engine)
 
 # Fetch all records and convert to dataframe
+data_df = None
 with db_engine.connect() as db_conn:
-  data_df = pd.read_sql_table('visits', db_conn)
+  data_df = pd.read_sql_table(
+    table_name='visits', 
+    con=db_conn,
+    parse_dates=["datetime"],
+    columns=[
+      "client_id",
+      "datetime",
+      "endpoint",
+      "method",
+      "content_length_bytes"
+    ]
+  )
+
+data_df.rename(
+  columns={
+    "client_id": "Client ID",
+    "datetime": "Date & Time",
+    "endpoint": "Endpoint",
+    "method": "HTTP Method",
+    "content_length_bytes": "Size (bytes)"
+  },
+  inplace=True
+)
 
 ############# PAGE STYLING ##############
 
@@ -33,4 +56,8 @@ st.write("View visitor analytics from the PolicyEngine household API below")
 
 # Table of filtered queries that's collapsed
 # by default
-# st.write(data_df)
+with st.expander(
+  label="Database of all requests",
+  expanded=False
+):
+  st.write(data_df)
