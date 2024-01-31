@@ -1,3 +1,4 @@
+import streamlit as st
 from google.cloud.sql.connector import Connector, IPTypes
 
 connector = Connector()

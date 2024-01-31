@@ -46,7 +46,7 @@ rpds-py==0.17.1
 rsa==4.9
 six==1.16.0
 smmap==5.0.1
-SQLAlchemy==1.4.0
+SQLAlchemy==2.0.25
 streamlit==1.30.0
 tenacity==8.2.3
 toml==0.10.2

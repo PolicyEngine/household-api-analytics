@@ -3,6 +3,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from data.setup import getconn
+from data.models import Visit
 
 ############# DATA FETCHING ##############
 
@@ -13,10 +14,8 @@ db_engine = create_engine(
 )
 
 # Fetch all records
-# with Session(db_engine) as db_session:
-    
-
-# 
+with Session(db_engine) as db_session:
+    records = db_session.execute(select(Visit))
 
 ############# PAGE STYLING ##############
 
