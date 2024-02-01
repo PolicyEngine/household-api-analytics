@@ -90,5 +90,6 @@ df_config = {
 }
 st.dataframe(
   data_df,
-  column_config=df_config
+  column_config=df_config,
+  height=400
 )
