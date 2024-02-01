@@ -32,16 +32,6 @@ with db_engine.connect() as db_conn:
     ]
   )
 
-data_df.rename(
-  columns={
-    "client_id": "Client ID",
-    "datetime": "Date & Time",
-    "endpoint": "Endpoint",
-    "method": "HTTP Method",
-    "content_length_bytes": "Size (bytes)"
-  },
-  inplace=True
-)
 
 ############# PAGE STYLING ##############
 
@@ -49,10 +39,30 @@ data_df.rename(
 st.title("Household API Analytics")
 st.write("View visitor analytics from the PolicyEngine household API below")
 
+# Data visualization options dict
+data_view_options = [
+  {
+    "label": "Cumulative number of requests, by client ID",
+  },
+  {
+    "label": "Cumulative data transfered, by client ID",
+  },
+]
+
 # Chart displaying data visualization,
 # based on selections from below table
 
 # Data selector tool
+
+data_view_labels = list(map(
+  lambda k: k["label"],
+  data_view_options
+))
+data_view_selection = st.radio(
+  "Select a data visualization option",
+  data_view_labels,
+  index=0
+)
 
 # Table of filtered queries that's collapsed
 # by default
@@ -60,4 +70,15 @@ with st.expander(
   label="Database of all requests",
   expanded=False
 ):
-  st.write(data_df)
+  
+  df_config = {
+    "client_id": "Client ID",
+    "datetime": "Date & Time",
+    "endpoint": "Endpoint",
+    "method": "HTTP Method",
+    "content_length_bytes": "Size (bytes)"
+  }
+  st.dataframe(
+    data_df,
+    column_config=df_config
+  )
