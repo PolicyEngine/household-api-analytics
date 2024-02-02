@@ -15,3 +15,8 @@ class Visit(Base):
     endpoint = mapped_column(String(64))
     method = mapped_column(String(32))
     content_length_bytes = mapped_column(Integer)
+
+class User(Base):
+    __tablename__ = "users"
+    client_id = mapped_column(String(255), primary_key=True, nullable=False)
+    name = mapped_column(String(255))
