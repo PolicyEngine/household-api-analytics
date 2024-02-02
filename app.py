@@ -106,11 +106,14 @@ df_config = {
   "datetime": "Date & Time",
   "endpoint": "Endpoint",
   "method": "HTTP Method",
-  "content_length_bytes": "Size (bytes)"
+  "content_length_bytes": "Size (bytes)",
+  "date": None,
+  "count": None
 }
 
 st.dataframe(
   data_df,
   column_config=df_config,
-  height=400
+  height=400,
+  hide_index=True,
 )
