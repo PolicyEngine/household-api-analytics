@@ -20,6 +20,7 @@ Base.prepare(db_engine)
 
 # Fetch all records and convert to dataframe
 data_df = None
+user_df = None
 with db_engine.connect() as db_conn:
   data_df = pd.read_sql_table(
     table_name='visits', 
@@ -34,19 +35,31 @@ with db_engine.connect() as db_conn:
     ]
   )
 
+  user_df = pd.read_sql_table(
+    table_name='users',
+    con=db_conn,
+    columns=[
+      "client_id",
+      "name"
+    ]
+  )
+
 ############# PAGE STYLING ##############
+
+# Add "name" row by merging in user_df  
+data_df = data_df.merge(user_df, how="inner", on="client_id")
 
 # Add a count row to the original dataframe
 data_df["count"] = np.zeros(len(data_df))
 data_df["date"] = pd.to_datetime(data_df["datetime"].dt.date)
+data_df = data_df.sort_values(by="datetime", ascending=False)
 
 # Underlying data
 select_options = {
-  "Client ID": "client_id",
+  "Name": "name",
   "Endpoint": "endpoint",
   "Method": "method",
 }
-
 
 # Page title
 st.title("Household API Analytics")
@@ -56,14 +69,13 @@ st.write("View visitor analytics from the PolicyEngine household API below")
 st.markdown("##")
 st.subheader("Total API requests per day, per user")
 
-overview_df = data_df.groupby(["date", "client_id"]).count().reset_index()
-pivoted_df = pd.pivot(overview_df, index="date", columns="client_id", values="count").reset_index()
+overview_df = data_df.groupby(["date", "name"]).count().reset_index()
+pivoted_df = pd.pivot(overview_df, index="date", columns="name", values="count").reset_index()
 pivoted_df = pivoted_df.rename(
   columns={
     "date": "Date"
   }
 )
-print(pivoted_df)
 
 st.bar_chart(
   data=pivoted_df,
@@ -86,7 +98,6 @@ group_option = st.selectbox(
 
 # Filter the dataframe by that count
 filtered_df = data_df.groupby(select_options[group_option]).count().reset_index()
-print(filtered_df)
 
 # Chart displaying data visualization,
 # based on selections from below table
@@ -100,13 +111,14 @@ st.bar_chart(
 # Table of filtered queries that's collapsed
 # by default
 st.markdown("##")
-st.subheader("Filtered database of all requests")
+st.subheader("Filtered database of all requests, newest first")
 df_config = {
-  "client_id": "Client ID",
+  "name": "Name",
   "datetime": "Date & Time",
   "endpoint": "Endpoint",
   "method": "HTTP Method",
   "content_length_bytes": "Size (bytes)",
+  "client_id": "Client ID",
   "date": None,
   "count": None
 }
