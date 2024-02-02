@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 import pandas as pd
 import numpy as np
+import altair as alt
 
 from data.setup import getconn
 from data.models import Visit
@@ -35,6 +36,10 @@ with db_engine.connect() as db_conn:
 
 ############# PAGE STYLING ##############
 
+# Add a count row to the original dataframe
+data_df["count"] = np.zeros(len(data_df))
+data_df["date"] = pd.to_datetime(data_df["datetime"].dt.date)
+
 # Underlying data
 select_options = {
   "Client ID": "client_id",
@@ -47,9 +52,27 @@ select_options = {
 st.title("Household API Analytics")
 st.write("View visitor analytics from the PolicyEngine household API below")
 
+# Usage overview chart
+st.markdown("##")
+st.subheader("Total API requests per day, per user")
+
+overview_df = data_df.groupby(["date", "client_id"]).count().reset_index()
+pivoted_df = pd.pivot(overview_df, index="date", columns="client_id", values="count").reset_index()
+pivoted_df = pivoted_df.rename(
+  columns={
+    "date": "Date"
+  }
+)
+print(pivoted_df)
+
+st.bar_chart(
+  data=pivoted_df,
+  x="Date",
+)
+
 # Data selector tool
 st.markdown("##")
-st.subheader("Configure the data visualization")
+st.subheader("Advanced data visualization")
 date_option = st.selectbox(
   label="Data period:",
   options=["All time"],
@@ -61,16 +84,13 @@ group_option = st.selectbox(
   index=0,
 )
 
-# Add a count row to the original dataframe
-data_df["count"] = np.zeros(len(data_df))
-
 # Filter the dataframe by that count
 filtered_df = data_df.groupby(select_options[group_option]).count().reset_index()
+print(filtered_df)
 
 # Chart displaying data visualization,
 # based on selections from below table
 st.markdown("##")
-st.subheader("View the data")
 st.bar_chart(
   data=filtered_df,
   x=select_options[group_option],
@@ -80,7 +100,7 @@ st.bar_chart(
 # Table of filtered queries that's collapsed
 # by default
 st.markdown("##")
-st.subheader("View the filtered database of requests")
+st.subheader("Filtered database of all requests")
 df_config = {
   "client_id": "Client ID",
   "datetime": "Date & Time",
@@ -88,6 +108,7 @@ df_config = {
   "method": "HTTP Method",
   "content_length_bytes": "Size (bytes)"
 }
+
 st.dataframe(
   data_df,
   column_config=df_config,
