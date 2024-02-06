@@ -1,12 +1,13 @@
 import streamlit as st
-from sqlalchemy import create_engine 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 from sqlalchemy.ext.automap import automap_base
 import pandas as pd
 import numpy as np
 import altair as alt
 
 from data.setup import getconn
-from data.models import Visit
+from data.models import User
 
 ############# DATA FETCHING ##############
 
@@ -129,3 +130,25 @@ st.dataframe(
   height=400,
   hide_index=True,
 )
+
+# Input new user
+st.markdown("##")
+st.subheader("Add a new user")
+user_client_id = st.text_input(
+  label="Client ID (no quotation marks, taken from auth0)"
+)
+user_name = st.text_input(
+  label="Name"
+)
+if st.button("Submit") and user_client_id and user_name:
+  with Session(db_engine) as db_session:
+    new_user = User(
+      client_id = user_client_id,
+      name = user_name
+    )
+    db_session.add_all([new_user])
+    db_session.commit()
+
+  # Not going to verify success - if there's
+  # failure, Streamlit pops up a detailed trace
+  
