@@ -5,6 +5,7 @@ from sqlalchemy.ext.automap import automap_base
 import pandas as pd
 import numpy as np
 import altair as alt
+import datetime
 
 from data.setup import getconn
 from data.models import User
@@ -85,17 +86,35 @@ st.bar_chart(
 
 # Data selector tool
 st.markdown("##")
-st.subheader("Advanced data visualization")
-date_option = st.selectbox(
-  label="Data period:",
-  options=["All time"],
-  disabled=True
+st.subheader("View by time period")
+year_option = st.selectbox(
+  label="Year:",
+  options=["All", "2024", "2025"],
 )
+month_option = st.selectbox(
+  label="Month:",
+  options=["All", "January", "February", "March", "April", "May", "June",
+           "July", "August", "September", "October", "November", "December"],
+)
+
 group_option = st.selectbox(
   label="Group by:",
   options=select_options.keys(),
   index=0,
 )
+
+year_filter = None if year_option == "All" else int(year_option)
+if month_option == "All":
+  month_filter = None
+else:
+  month_filter = datetime.datetime.strptime(month_option, "%B").month
+
+if year_filter is not None:
+  data_df = data_df[
+    (data_df["datetime"].dt.year == year_filter) ]
+if month_filter is not None:
+  data_df = data_df[
+    (data_df["datetime"].dt.month == month_filter) ]
 
 # Filter the dataframe by that count
 filtered_df = data_df.groupby(select_options[group_option]).count().reset_index()
