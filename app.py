@@ -89,7 +89,7 @@ st.markdown("##")
 st.subheader("View by time period")
 year_option = st.selectbox(
   label="Year:",
-  options=["All", "2024", "2025"],
+  options=["All", "2024", "2025", "2026"],
 )
 month_option = st.selectbox(
   label="Month:",
