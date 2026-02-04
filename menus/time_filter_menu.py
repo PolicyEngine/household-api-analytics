@@ -10,7 +10,7 @@ def create_time_filter_menu():
   with st.form("time_filter_menu"):
     st.session_state.year_option = st.selectbox(
       label="Year:",
-      options=["All", "2024", "2025"],
+      options=["All", "2024", "2025", "2026"],
     )
     st.session_state.month_option = st.selectbox(
       label="Month:",
