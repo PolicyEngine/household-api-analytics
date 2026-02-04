@@ -10,6 +10,8 @@ import datetime
 from data.setup import getconn
 from data.models import User
 
+from menus.time_filter_menu import create_time_filter_menu, select_options
+
 ############# DATA FETCHING ##############
 
 # Connect with remote analytics DB
@@ -56,13 +58,6 @@ data_df["count"] = np.zeros(len(data_df))
 data_df["date"] = pd.to_datetime(data_df["datetime"].dt.date)
 data_df = data_df.sort_values(by="datetime", ascending=False)
 
-# Underlying data
-select_options = {
-  "Name": "name",
-  "Endpoint": "endpoint",
-  "Method": "method",
-}
-
 # Page title
 st.title("Household API Analytics")
 st.write("View visitor analytics from the PolicyEngine household API below")
@@ -87,27 +82,13 @@ st.bar_chart(
 # Data selector tool
 st.markdown("##")
 st.subheader("View by time period")
-year_option = st.selectbox(
-  label="Year:",
-  options=["All", "2024", "2025", "2026"],
-)
-month_option = st.selectbox(
-  label="Month:",
-  options=["All", "January", "February", "March", "April", "May", "June",
-           "July", "August", "September", "October", "November", "December"],
-)
+create_time_filter_menu()
 
-group_option = st.selectbox(
-  label="Group by:",
-  options=select_options.keys(),
-  index=0,
-)
-
-year_filter = None if year_option == "All" else int(year_option)
-if month_option == "All":
+year_filter = None if st.session_state.year_option == "All" else int(st.session_state.year_option)
+if st.session_state.month_option == "All":
   month_filter = None
 else:
-  month_filter = datetime.datetime.strptime(month_option, "%B").month
+  month_filter = datetime.datetime.strptime(st.session_state.month_option, "%B").month
 
 if year_filter is not None:
   data_df = data_df[
@@ -117,14 +98,14 @@ if month_filter is not None:
     (data_df["datetime"].dt.month == month_filter) ]
 
 # Filter the dataframe by that count
-filtered_df = data_df.groupby(select_options[group_option]).count().reset_index()
+filtered_df = data_df.groupby(select_options[st.session_state.group_option]).count().reset_index()
 
 # Chart displaying data visualization,
 # based on selections from below table
 st.markdown("##")
 st.bar_chart(
   data=filtered_df,
-  x=select_options[group_option],
+  x=select_options[st.session_state.group_option],
   y="count"
 )
 
